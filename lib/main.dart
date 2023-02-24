@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:project_init/sliver_test.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 void main() {
@@ -57,7 +58,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   void _incrementCounter() {
-    //TODO:
+    Get.to(SliverTest());
   }
 
   @override
