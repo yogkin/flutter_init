@@ -19,23 +19,54 @@ class SliverTabBarViewPage extends StatefulWidget {
 
 class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
     with TickerProviderStateMixin {
+  late TabController firstTabController =
+      TabController(length: firstTabs.length, vsync: this)..addListener(() {
+        if (!firstTabController.indexIsChanging) {
+          print("监听切换tab ${firstTabController.index} ");
+          setState(() {
+            isShowSecondTab = firstTabController.index == 1;
+            isShowThreeTab = true;
+            childFirstTabController.animateTo(firstTabController.index);
+          });
+        }
+      });
 
-  late final firstTabController =
-  TabController(length: firstTabs.length, vsync: this);
-  late final childSecondTabController =
-  TabController(length: secondTabs.length, vsync: this);
-  late final childFirstTabController =
-  TabController(length: secondTabs.length, vsync: this);
+  late TabController childSecondTabController =
+  TabController(length: secondTabs.length, vsync: this)..addListener(() {
+    if (!childSecondTabController.indexIsChanging) {
+      print("监听切换tab ${childSecondTabController.index} ");
+      setState(() {
+        isShowThreeTab = childSecondTabController.index == 0;
+        childFirstTabController.animateTo(firstTabController.index+childSecondTabController.index+1);
+      });
+    }
+  });
+
+  late TabController childThreeTabController =
+      TabController(length: threeTabs.length, vsync: this)..addListener(() {
+        if (!childThreeTabController.indexIsChanging) {
+          print("监听切换tab ${childThreeTabController.index} ");
+          setState(() {
+            isShowThreeTab = childSecondTabController.index == 0;
+            childFirstTabController.animateTo(firstTabController.index+childSecondTabController.index+childThreeTabController.index+2);
+          });
+        }
+      });
+
+  late TabController childFirstTabController =
+      TabController(length: allTabLength, vsync: this);
 
   @override
   void dispose() {
     super.dispose();
     firstTabController.dispose();
-    childSecondTabController.dispose();
+    childThreeTabController.dispose();
     childFirstTabController.dispose();
   }
 
-  final secondTabs = const [
+  late final allTabLength = firstTabs.length+secondTabs.length+threeTabs.length;
+
+  final threeTabs = const [
     Tab(
       text: '今日',
     ),
@@ -47,6 +78,14 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
     ),
     Tab(
       text: '上月',
+    )
+  ];
+  final secondTabs = const [
+    Tab(
+      text: '任务值明细',
+    ),
+    Tab(
+      text: '活动奖励',
     )
   ];
 
@@ -61,12 +100,18 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
 
   List<int> items = List.generate(20, (index) => index);
 
+  bool isShowSecondTab = false;
+  bool isShowThreeTab = true;
+
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
     return Scaffold(
       body: EasyRefresh.builder(
-        header: const SkatingHeader(position: IndicatorPosition.locator,triggerOffset: 100,clamping: true),
+        header: const SkatingHeader(
+            position: IndicatorPosition.locator,
+            triggerOffset: 100,
+            clamping: true),
         footer: ClassicFooter(
           position: IndicatorPosition.locator,
           dragText: 'Pull to load'.tr,
@@ -78,10 +123,7 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
           failedText: 'Failed'.tr,
           messageText: 'Last updated at %T'.tr,
         ),
-        onRefresh: () async {
-
-        },
-
+        onRefresh: () async {},
         childBuilder: (context, physics) {
           return ExtendedNestedScrollView(
             physics: physics,
@@ -106,80 +148,48 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
                   delegate: FirstTabView(firstTabs, firstTabController),
                   pinned: true,
                 ),
-
-                SliverPersistentHeader(
-                  delegate: SecondTabView(secondTabs, childFirstTabController),
+                SliverVisibility(
+                  visible: isShowSecondTab,
+                    sliver: SliverPersistentHeader(
+                  delegate: SecondTabView(secondTabs, childSecondTabController),
                   pinned: true,
-                ),
+                )),
+                SliverVisibility(
+                    visible: isShowThreeTab,
+                    sliver: SliverPersistentHeader(
+                      delegate:
+                          SecondTabView(threeTabs, childThreeTabController),
+                      pinned: true,
+                    ))
               ];
             },
             body: TabBarView(
-              controller: firstTabController,
-              children: [Column(
-                children: [
-                  Expanded(
-                    child: TabBarView(
-                      controller: childFirstTabController,
-                      children: List.generate(
-                        secondTabs.length,
-                            (index) => ExtendedVisibilityDetector(
-                          uniqueKey: Key('Tab$index'),
-                          child: _AutomaticKeepAlive(
-                            child: CustomScrollView(
-                              physics: physics,
-                              slivers: [
-                                SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                            (context, index) {
-                                          return Container(
-                                            alignment: Alignment.center,
-                                            color: Colors.blue[200 + items[index] % 4 * 100],
-                                            height: 100 + items[index] % 4 * 20.0,
-                                            child: Text('Item: ${items[index]}'),
-                                          );
-                                        }, childCount: items.length)),
-                                const FooterLocator.sliver(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+              controller: childFirstTabController,
+              children: List.generate(
+                allTabLength,
+                    (index) => ExtendedVisibilityDetector(
+                  uniqueKey: Key('Tab$index'),
+                  child: _AutomaticKeepAlive(
+                    child: CustomScrollView(
+                      physics: physics,
+                      slivers: [
+                        SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                  return Container(
+                                    alignment: Alignment.center,
+                                    color: Colors
+                                        .blue[200 + items[index] % 4 * 100],
+                                    height: 100 + items[index] % 4 * 20.0,
+                                    child: Text('Item: ${items[index]}'),
+                                  );
+                                }, childCount: items.length)),
+                        const FooterLocator.sliver(),
+                      ],
                     ),
                   ),
-                ],
-              ),Column(
-                children: [
-                  Expanded(
-                    child: TabBarView(
-                      controller: childSecondTabController,
-                      children: List.generate(
-                        secondTabs.length,
-                            (index) => ExtendedVisibilityDetector(
-                          uniqueKey: Key('Tab$index'),
-                          child: _AutomaticKeepAlive(
-                            child: CustomScrollView(
-                              physics: physics,
-                              slivers: [
-                                SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                            (context, index) {
-                                          return Container(
-                                            alignment: Alignment.center,
-                                            color: Colors.blue[200 + items[index] % 4 * 100],
-                                            height: 100 + items[index] % 4 * 20.0,
-                                            child: Text('Item: ${items[index]}'),
-                                          );
-                                        }, childCount: items.length)),
-                                const FooterLocator.sliver(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              )],
+                ),
+              ),
             ),
           );
         },
@@ -198,9 +208,9 @@ class FirstTabView extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      height: 53.w+kToolbarHeight,
+      height: 53.w + kToolbarHeight,
       color: Colors.black12,
-      padding: EdgeInsets.only(left:88.w,right: 88.w,top: 30.w),
+      padding: EdgeInsets.only(left: 88.w, right: 88.w, top: 30.w),
       child: Center(
         child: Container(
           decoration: BoxDecoration(
@@ -214,7 +224,7 @@ class FirstTabView extends SliverPersistentHeaderDelegate {
             labelStyle: TextStyle(fontSize: 15.sp, color: Color(0xFF3D3D47)),
             labelColor: const Color(0xFF3D3D47),
             unselectedLabelStyle:
-            TextStyle(fontSize: 14.sp, color: Color(0xFF6A6A70)),
+                TextStyle(fontSize: 14.sp, color: Color(0xFF6A6A70)),
             indicator: CustomTabIndicator(
                 insets: EdgeInsets.symmetric(vertical: 3.w, horizontal: 4.w),
                 borderSide: BorderSide(width: 24.w, color: Colors.amber)),
@@ -226,10 +236,10 @@ class FirstTabView extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 53.w+kToolbarHeight;
+  double get maxExtent => 53.w + kToolbarHeight;
 
   @override
-  double get minExtent => 15.w+kToolbarHeight;
+  double get minExtent => 15.w + kToolbarHeight;
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
@@ -241,7 +251,7 @@ class SecondTabView extends SliverPersistentHeaderDelegate {
   SecondTabView(this.tabs, this.controller);
 
   final List<Widget> tabs;
-  final TabController controller;
+  final TabController? controller;
 
   @override
   Widget build(
@@ -256,7 +266,7 @@ class SecondTabView extends SliverPersistentHeaderDelegate {
         labelStyle: TextStyle(fontSize: 15.sp, color: Color(0xFF3D3D47)),
         labelColor: const Color(0xFF3D3D47),
         unselectedLabelStyle:
-        TextStyle(fontSize: 14.sp, color: Color(0xFF6A6A70)),
+            TextStyle(fontSize: 14.sp, color: Color(0xFF6A6A70)),
         indicator: CustomTabIndicator(
             insets: EdgeInsets.symmetric(vertical: 3.w, horizontal: 8.w),
             borderSide: BorderSide(width: 2.w, color: Colors.amber)),
