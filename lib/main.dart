@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:project_init/sliver_test.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+
+import 'test2.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
             home: child,
           );
         },
+        designSize: const Size(375,837),
         child: const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
     );
@@ -58,7 +60,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   void _incrementCounter() {
-    Get.to(SliverTest());
+    Get.to(()=>SliverTabBarViewPage());
   }
 
   @override
