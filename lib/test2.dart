@@ -22,14 +22,17 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
 
   late final firstTabController =
   TabController(length: firstTabs.length, vsync: this);
-  late final secondTabController =
+  late final childSecondTabController =
+  TabController(length: secondTabs.length, vsync: this);
+  late final childFirstTabController =
   TabController(length: secondTabs.length, vsync: this);
 
   @override
   void dispose() {
     super.dispose();
     firstTabController.dispose();
-    secondTabController.dispose();
+    childSecondTabController.dispose();
+    childFirstTabController.dispose();
   }
 
   final secondTabs = const [
@@ -105,43 +108,78 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
                 ),
 
                 SliverPersistentHeader(
-                  delegate: SecondTabView(secondTabs, secondTabController),
+                  delegate: SecondTabView(secondTabs, childFirstTabController),
                   pinned: true,
                 ),
               ];
             },
-            body: Column(
-              children: [
-                Expanded(
-                  child: TabBarView(
-                    controller: secondTabController,
-                    children: List.generate(
-                      secondTabs.length,
-                          (index) => ExtendedVisibilityDetector(
-                            uniqueKey: Key('Tab$index'),
-                            child: _AutomaticKeepAlive(
-                              child: CustomScrollView(
-                                physics: physics,
-                                slivers: [
-                                  SliverList(
-                                      delegate: SliverChildBuilderDelegate(
-                                              (context, index) {
-                                            return Container(
-                                              alignment: Alignment.center,
-                                              color: Colors.blue[200 + items[index] % 4 * 100],
-                                              height: 100 + items[index] % 4 * 20.0,
-                                              child: Text('Item: ${items[index]}'),
-                                            );
-                                          }, childCount: items.length)),
-                                  const FooterLocator.sliver(),
-                                ],
-                              ),
+            body: TabBarView(
+              controller: firstTabController,
+              children: [Column(
+                children: [
+                  Expanded(
+                    child: TabBarView(
+                      controller: childFirstTabController,
+                      children: List.generate(
+                        secondTabs.length,
+                            (index) => ExtendedVisibilityDetector(
+                          uniqueKey: Key('Tab$index'),
+                          child: _AutomaticKeepAlive(
+                            child: CustomScrollView(
+                              physics: physics,
+                              slivers: [
+                                SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                            (context, index) {
+                                          return Container(
+                                            alignment: Alignment.center,
+                                            color: Colors.blue[200 + items[index] % 4 * 100],
+                                            height: 100 + items[index] % 4 * 20.0,
+                                            child: Text('Item: ${items[index]}'),
+                                          );
+                                        }, childCount: items.length)),
+                                const FooterLocator.sliver(),
+                              ],
                             ),
                           ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),Column(
+                children: [
+                  Expanded(
+                    child: TabBarView(
+                      controller: childSecondTabController,
+                      children: List.generate(
+                        secondTabs.length,
+                            (index) => ExtendedVisibilityDetector(
+                          uniqueKey: Key('Tab$index'),
+                          child: _AutomaticKeepAlive(
+                            child: CustomScrollView(
+                              physics: physics,
+                              slivers: [
+                                SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                            (context, index) {
+                                          return Container(
+                                            alignment: Alignment.center,
+                                            color: Colors.blue[200 + items[index] % 4 * 100],
+                                            height: 100 + items[index] % 4 * 20.0,
+                                            child: Text('Item: ${items[index]}'),
+                                          );
+                                        }, childCount: items.length)),
+                                const FooterLocator.sliver(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )],
             ),
           );
         },
