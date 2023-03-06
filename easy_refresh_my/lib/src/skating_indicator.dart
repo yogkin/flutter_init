@@ -27,22 +27,14 @@ class _SkatingIndicator extends StatefulWidget {
 class _SkatingIndicatorState extends State<_SkatingIndicator> {
   double get _offset => widget.state.offset;
 
-
   /// Mode change listener.
   void _onModeChange(IndicatorMode mode, double offset) {
     if (mode == IndicatorMode.ready || mode == IndicatorMode.processing) {
-
-    } else {
-
-    }
+    } else {}
     if (mode == IndicatorMode.processed) {
-
-    } else {
-
-    }
+    } else {}
     if (mode == IndicatorMode.inactive) {
-      setState(() {
-      });
+      setState(() {});
     }
   }
 
@@ -72,7 +64,7 @@ class _SkatingIndicatorState extends State<_SkatingIndicator> {
           height: _offset,
         ),
         Positioned(
-          top: 0,
+          top: _offset > 100 ? _offset - 100 : 0,
           left: 0,
           right: 0,
           child: SizedBox(

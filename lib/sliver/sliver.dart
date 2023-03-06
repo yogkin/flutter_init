@@ -207,19 +207,20 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
                             ],
                           ),
                           Positioned(
-                              top: 69.w,
-                              right: 40.w,
-                              child: Image.asset(
-                                'assets/images/icon_mz.png',
-                                width: 52.w,
-                              )),
+                            top: 69.w,
+                            right: 40.w,
+                            child: Image.asset(
+                              'assets/images/icon_mz.png',
+                              width: 52.w,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     SliverLayoutBuilder(
                       builder: (BuildContext context,
                           SliverConstraints constraints) {
-                        log('11:${1-constraints.scrollOffset/(MediaQuery.of(context).padding.top-2)}');
+                        log('11:${1 - constraints.scrollOffset / (MediaQuery.of(context).padding.top - 2)}');
                         return SliverPersistentHeader(
                           delegate: FirstTabView(
                               firstTabs, firstTabController, constraints),
@@ -314,7 +315,9 @@ class FirstTabView extends SliverPersistentHeaderDelegate {
             ),
           ),
           child: Opacity(
-            opacity: 1-constraints.scrollOffset/(MediaQuery.of(context).padding.top-2),
+            opacity: 1 -
+                constraints.scrollOffset /
+                    (MediaQuery.of(context).padding.top - 2),
             child: Text(
               '每月25-31号可提现上月结算收益',
               style:
