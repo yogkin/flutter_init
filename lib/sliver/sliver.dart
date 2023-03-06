@@ -219,6 +219,7 @@ class SliverTabBarViewPageState extends State<SliverTabBarViewPage>
                     SliverLayoutBuilder(
                       builder: (BuildContext context,
                           SliverConstraints constraints) {
+                        log('11:${1-constraints.scrollOffset/(MediaQuery.of(context).padding.top-2)}');
                         return SliverPersistentHeader(
                           delegate: FirstTabView(
                               firstTabs, firstTabController, constraints),
@@ -300,7 +301,6 @@ class FirstTabView extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    log("constraints build:${constraints.scrollOffset}");
     return Column(
       children: [
         Container(
@@ -314,7 +314,7 @@ class FirstTabView extends SliverPersistentHeaderDelegate {
             ),
           ),
           child: Opacity(
-            opacity: 1-constraints.scrollOffset/25,
+            opacity: 1-constraints.scrollOffset/(MediaQuery.of(context).padding.top-2),
             child: Text(
               '每月25-31号可提现上月结算收益',
               style:
